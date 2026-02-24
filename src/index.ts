@@ -1,8 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 import authRouter from './routes/auth';
 import playlistsRouter from './routes/playlists';
