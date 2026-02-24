@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  firebaseUid String    @unique @map("firebase_uid")
+  email       String    @unique
+  displayName String?   @map("display_name")
+  photoUrl    String?   @map("photo_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  playlists   Playlist[]
+  likes       Like[]
+  bookmarks   Bookmark[]
+  comments    Comment[]
+
+  @@map("users")
+}
+
+model Playlist {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  name        String
+  description String?
+  category    String?
+  tags        String[]
+  tracks      Json
+  videos      Json
+  isPublic    Boolean   @default(true) @map("is_public")
+  likeCount   Int       @default(0) @map("like_count")
+  playCount   Int       @default(0) @map("play_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User       @relation(fields: [userId], references: [id])
+  likes       Like[]
+  bookmarks   Bookmark[]
+  comments    Comment[]
+  playlistTags PlaylistTag[]
+
+  @@map("playlists")
+}
+
+model Like {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  playlistId Int      @map("playlist_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id])
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+
+  @@unique([userId, playlistId])
+  @@map("likes")
+}
+
+model Bookmark {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  playlistId Int      @map("playlist_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id])
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+
+  @@unique([userId, playlistId])
+  @@map("bookmarks")
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  playlistId Int      @map("playlist_id")
+  content    String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user       User     @relation(fields: [userId], references: [id])
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+
+  @@map("comments")
+}
+
+model PlaylistTag {
+  id         Int      @id @default(autoincrement())
+  playlistId Int      @map("playlist_id")
+  tag        String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+
+  @@map("playlist_tags")
+}
