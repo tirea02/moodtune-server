@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
@@ -755,8 +755,8 @@ async function main() {
         description: p.description,
         category: p.category,
         tags: p.tags,
-        tracks: p.tracks,
-        videos: p.videos,
+        tracks: p.tracks as unknown as Prisma.InputJsonValue,
+        videos: p.videos as unknown as Prisma.InputJsonValue,
         isPublic: true,
         likeCount: p.likeCount,
         playCount: p.playCount,
