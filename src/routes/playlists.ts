@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import prisma from '../lib/prisma';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { authenticate, authenticateOptional, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -11,7 +11,8 @@ const userSelect = { id: true, displayName: true, photoUrl: true };
 // ────────────────────────────────────────────────
 
 // GET /api/playlists - 공개 플레이리스트 목록
-router.get('/', async (req, res: Response) => {
+// 로그인 유저: isLiked / isBookmarked 추가 반환 (authenticateOptional)
+router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(50, parseInt(req.query.limit as string) || 20);
@@ -32,6 +33,25 @@ router.get('/', async (req, res: Response) => {
       }),
       prisma.playlist.count({ where }),
     ]);
+
+    // 로그인 유저: 좋아요/북마크 여부 배치 조회
+    if (req.user && playlists.length > 0) {
+      const ids = playlists.map((p) => p.id);
+      const [likes, bookmarks] = await Promise.all([
+        prisma.like.findMany({ where: { userId: req.user.id, playlistId: { in: ids } }, select: { playlistId: true } }),
+        prisma.bookmark.findMany({ where: { userId: req.user.id, playlistId: { in: ids } }, select: { playlistId: true } }),
+      ]);
+      const likedSet = new Set(likes.map((l) => l.playlistId));
+      const bookmarkedSet = new Set(bookmarks.map((b) => b.playlistId));
+
+      const enriched = playlists.map((p) => ({
+        ...p,
+        isLiked: likedSet.has(p.id),
+        isBookmarked: bookmarkedSet.has(p.id),
+      }));
+      res.json({ playlists: enriched, total, page, limit });
+      return;
+    }
 
     res.json({ playlists, total, page, limit });
   } catch {
