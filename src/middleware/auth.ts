@@ -54,8 +54,9 @@ export async function authenticateOptional(
       select: { id: true, firebaseUid: true, email: true },
     });
     if (user) req.user = user;
-  } catch {
+  } catch (err) {
     // 토큰 오류 시 비로그인으로 처리 (에러 미반환)
+    console.error('[authenticateOptional] token verify failed:', err)
   }
   next();
 }
