@@ -96,13 +96,28 @@ router.get('/:id', async (req, res: Response): Promise<void> => {
 });
 
 // POST /api/playlists
-router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
+router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, description, category, tags, tracks, videos, isPublic } = req.body;
+
+    // 입력값 검증
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      res.status(400).json({ error: '플레이리스트 이름은 필수입니다.' });
+      return;
+    }
+    if (tracks !== undefined && !Array.isArray(tracks)) {
+      res.status(400).json({ error: 'tracks는 배열이어야 합니다.' });
+      return;
+    }
+    if (videos !== undefined && !Array.isArray(videos)) {
+      res.status(400).json({ error: 'videos는 배열이어야 합니다.' });
+      return;
+    }
+
     const playlist = await prisma.playlist.create({
       data: {
         userId: req.user!.id,
-        name,
+        name: name.trim(),
         description,
         category,
         tags: tags ?? [],
