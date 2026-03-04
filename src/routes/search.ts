@@ -25,14 +25,20 @@ router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) =>
         skip: (page - 1) * limit,
         take: limit,
         orderBy: [{ likeCount: 'desc' }, { createdAt: 'desc' }],
-        include: { user: { select: { id: true, displayName: true, photoUrl: true } } },
+        include: {
+          user: { select: { id: true, displayName: true, photoUrl: true } },
+          _count: { select: { comments: true } },
+        },
       }),
       prisma.playlist.count({ where }),
     ]);
 
+    // comments 관계 COUNT → commentCount 필드로 정규화
+    const withCounts = playlists.map((p) => ({ ...p, commentCount: p._count.comments }));
+
     // 로그인 유저: isLiked / isBookmarked enrichment (playlists.ts GET '/' 와 동일 패턴)
-    if (req.user && playlists.length > 0) {
-      const ids = playlists.map((p) => p.id);
+    if (req.user && withCounts.length > 0) {
+      const ids = withCounts.map((p) => p.id);
       const [likes, bookmarks] = await Promise.all([
         prisma.like.findMany({
           where: { userId: req.user.id, playlistId: { in: ids } },
@@ -45,7 +51,7 @@ router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) =>
       ]);
       const likedSet = new Set(likes.map((l) => l.playlistId));
       const bookmarkedSet = new Set(bookmarks.map((b) => b.playlistId));
-      const enriched = playlists.map((p) => ({
+      const enriched = withCounts.map((p) => ({
         ...p,
         isLiked: likedSet.has(p.id),
         isBookmarked: bookmarkedSet.has(p.id),
@@ -54,7 +60,7 @@ router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) =>
       return;
     }
 
-    res.json({ playlists, total, page, limit });
+    res.json({ playlists: withCounts, total, page, limit });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
