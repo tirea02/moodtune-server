@@ -251,4 +251,20 @@ router.post('/:id/comments', authenticate, async (req: AuthRequest, res: Respons
   }
 });
 
+// DELETE /api/playlists/:id/comments/:commentId
+// 본인 댓글만 삭제 가능 (userId 검증)
+router.delete('/:id/comments/:commentId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const commentId = parseInt(req.params.commentId as string);
+    const comment = await prisma.comment.findUnique({ where: { id: commentId } });
+    if (!comment) { res.status(404).json({ error: 'Not found' }); return; }
+    if (comment.userId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return; }
+
+    await prisma.comment.delete({ where: { id: commentId } });
+    res.status(204).send();
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
