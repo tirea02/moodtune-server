@@ -16,10 +16,10 @@ const PORT = process.env.PORT || 3000;
 // 환경별 CORS origin 제한
 // - 개발(NODE_ENV !== 'production'): localhost 모든 포트 허용
 // - 프로덕션: Vercel 배포 도메인만 허용
-const allowedOrigin: string | RegExp =
+const allowedOrigin: string | RegExp | (string | RegExp)[] =
   process.env.NODE_ENV !== 'production'
     ? /^http:\/\/localhost:\d+$/
-    : 'https://moodtune-mu.vercel.app';
+    : ['https://moodtune-mu.vercel.app', /^http:\/\/localhost:\d+$/];
 
 app.use(cors({ origin: allowedOrigin }));
 app.use(express.json());
