@@ -30,7 +30,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       },
     });
     res.json({ user });
-  } catch {
+  } catch (err) {
+    console.error('[auth] login 에러:', err);
     res.status(401).json({ error: 'Invalid token' });
   }
 });

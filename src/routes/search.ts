@@ -61,7 +61,8 @@ router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) =>
     }
 
     res.json({ playlists: withCounts, total, page, limit });
-  } catch {
+  } catch (err) {
+    console.error('[search] GET / 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

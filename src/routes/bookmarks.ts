@@ -25,7 +25,8 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<v
       return { ...b, playlist: { ...playlist, commentCount: _count.comments } };
     });
     res.json({ bookmarks });
-  } catch {
+  } catch (err) {
+    console.error('[bookmarks] GET / 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

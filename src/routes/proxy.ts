@@ -99,7 +99,8 @@ Recommend 6 diverse tracks that match the mood. VideoQueries should be specific 
     const parsed = JSON.parse(cleaned) as GeminiResponse;
 
     res.json(parsed);
-  } catch {
+  } catch (err) {
+    console.error('[proxy] POST /analyze 에러:', err);
     res.status(500).json({ error: 'Failed to analyze mood' });
   }
 });
@@ -146,7 +147,8 @@ router.post('/youtube', async (req: Request, res: Response): Promise<void> => {
     );
 
     res.json(results.filter(Boolean));
-  } catch {
+  } catch (err) {
+    console.error('[proxy] POST /youtube 에러:', err);
     res.status(500).json({ error: 'Failed to fetch YouTube videos' });
   }
 });

@@ -13,7 +13,8 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Pro
 
     await prisma.comment.delete({ where: { id: comment.id } });
     res.status(204).send();
-  } catch {
+  } catch (err) {
+    console.error('[comments] DELETE /:id 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
