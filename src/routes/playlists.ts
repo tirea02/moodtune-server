@@ -57,7 +57,8 @@ router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) =>
     }
 
     res.json({ playlists: withCounts, total, page, limit });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] GET / 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -70,7 +71,8 @@ router.get('/my', authenticate, async (req: AuthRequest, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
     res.json({ playlists });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] GET /my 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -90,7 +92,8 @@ router.get('/:id', async (req, res: Response): Promise<void> => {
       data: { playCount: { increment: 1 } },
     });
     res.json({ playlist });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] GET /:id 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -127,7 +130,8 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
       },
     });
     res.status(201).json({ playlist });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] POST / 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -144,7 +148,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
       data: req.body,
     });
     res.json({ playlist: updated });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] PUT /:id 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -158,7 +163,8 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Pro
 
     await prisma.playlist.delete({ where: { id: playlist.id } });
     res.status(204).send();
-  } catch {
+  } catch (err) {
+    console.error('[playlists] DELETE /:id 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -181,6 +187,7 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res: Response): 
       res.status(409).json({ error: 'Already liked' });
       return;
     }
+    console.error('[playlists] POST /:id/like 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -194,7 +201,8 @@ router.delete('/:id/like', authenticate, async (req: AuthRequest, res: Response)
       prisma.playlist.update({ where: { id: playlistId }, data: { likeCount: { decrement: 1 } } }),
     ]);
     res.status(204).send();
-  } catch {
+  } catch (err) {
+    console.error('[playlists] DELETE /:id/like 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -214,6 +222,7 @@ router.post('/:id/bookmark', authenticate, async (req: AuthRequest, res: Respons
       res.status(409).json({ error: 'Already bookmarked' });
       return;
     }
+    console.error('[playlists] POST /:id/bookmark 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -226,7 +235,8 @@ router.delete('/:id/bookmark', authenticate, async (req: AuthRequest, res: Respo
       where: { userId_playlistId: { userId: req.user!.id, playlistId } },
     });
     res.status(204).send();
-  } catch {
+  } catch (err) {
+    console.error('[playlists] DELETE /:id/bookmark 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -244,7 +254,8 @@ router.get('/:id/comments', async (req, res: Response) => {
       orderBy: { createdAt: 'asc' },
     });
     res.json({ comments });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] GET /:id/comments 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -261,7 +272,8 @@ router.post('/:id/comments', authenticate, async (req: AuthRequest, res: Respons
       include: { user: { select: userSelect } },
     });
     res.status(201).json({ comment });
-  } catch {
+  } catch (err) {
+    console.error('[playlists] POST /:id/comments 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -277,7 +289,8 @@ router.delete('/:id/comments/:commentId', authenticate, async (req: AuthRequest,
 
     await prisma.comment.delete({ where: { id: commentId } });
     res.status(204).send();
-  } catch {
+  } catch (err) {
+    console.error('[playlists] DELETE /:id/comments/:commentId 에러:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
