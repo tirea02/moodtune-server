@@ -66,10 +66,12 @@ router.get('/', authenticateOptional, async (req: AuthRequest, res: Response) =>
 // GET /api/playlists/my - 내 플레이리스트
 router.get('/my', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const playlists = await prisma.playlist.findMany({
+    const raw = await prisma.playlist.findMany({
       where: { userId: req.user!.id },
       orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { comments: true } } },
     });
+    const playlists = raw.map((p) => ({ ...p, commentCount: p._count.comments }));
     res.json({ playlists });
   } catch (err) {
     console.error('[playlists] GET /my 에러:', err);
