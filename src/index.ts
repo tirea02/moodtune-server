@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigin: string | RegExp =
   process.env.NODE_ENV !== 'production'
     ? /^http:\/\/localhost:\d+$/
-    : 'https://moodtune.vercel.app';
+    : 'https://moodtune-mu.vercel.app';
 
 app.use(cors({ origin: allowedOrigin }));
 app.use(express.json());
