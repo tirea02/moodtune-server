@@ -1,6 +1,7 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 
 import authRouter from './routes/auth';
 import playlistsRouter from './routes/playlists';
@@ -22,6 +23,7 @@ const allowedOrigin: string | RegExp =
 
 app.use(cors({ origin: allowedOrigin }));
 app.use(express.json());
+app.use(morgan('dev'));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
@@ -31,6 +33,15 @@ app.use('/api/bookmarks', bookmarksRouter);
 app.use('/api/comments', commentsRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/proxy', proxyRouter);
+
+// 전역 에러 핸들러 — express.json() 파싱 에러, next(err) 호출 등 처리
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('[server] 처리되지 않은 에러:', err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
